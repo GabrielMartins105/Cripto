@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
-char *permuta(const char *str, int tam);
+void permuta(const char *str, int tam,const char *hash, int *flag);
+int comparar(const char *tentativa,const char *hash_V);
 
 int main(){
     FILE* texto = fopen("key_for_rsa_public.hash", "r");
@@ -20,58 +22,77 @@ int main(){
     
     printf("Hash: %s\n", hash);
     fclose(texto);
-    char dec[8]; 
     int encontrada = 0;
     int tam = 1;
 
-
-    while (encontrada == 0)
-    {
-        for (int i = 0; i < tam; i++){
-            //dec = strcat("za", permuta("0123456789abcdefghijklmnopqrstuvwxyz", tam));
-            }         
-        }       
-
-        
-
+    while (encontrada == 0 && tam <= 6){
+        printf("Testando sufixos de tamanho: %d...\n", tam);
+        permuta("0123456789abcdefghijklmnopqrstuvwxyz", tam, hash, &encontrada);
         tam++;
+    }
 
+    return 0;       
 }
 
 
-char *permuta(const char *str, int tam){
-    int *num = (int *) calloc(tam+1 , sizeof(int));
-    //char tdper[7];
-    char *resultado = (char *) malloc(tam * sizeof(char));
+void permuta(const char *str, int tam, const char *hash, int *flag){
     int len = strlen(str);
-    int k = tam - 1;
+    int *num = (int *) calloc((tam + 1) , sizeof(int));
+    int k;
+    char *resultado = (char *) malloc((tam + 1)* sizeof(char));
 
     if (resultado == NULL) {
         perror("Erro ao alocar memoria");
         exit(EXIT_FAILURE);
     }
 
-    while(num[tam] == 0){
-        for (int i = 0; i < len; i++){
-            for(int j = 0; j < tam; j++){
-                resultado[k] = str[num[j]]; 
-                k--;
+    while(num[tam] == 0 && *flag == 0){
+      
+        for(int j = 0, k = tam - 1; j < tam; j++){
+            resultado[k] = str[num[j]]; 
+            k--;
+        }
+
+        resultado[tam] = 0;
+        char temp[9] = "za";
+        strcat(temp, resultado);
+        
+        if (comparar(temp, hash)) {
+            *flag = 1;
+            printf("\n>>> SUCESSO! Senha encontrada: %s <<<\n", temp);
+        }
+
+
+        num[0]++;
+        for ( int i = 0; i < tam; i++ ) {
+            if ( num[i] == len ) { // Correção: compara com 'len' em vez de 36 fixo
+                num[i] = 0 ;
+                num[i+1]++ ;
             }
-
-            resultado[tam] = 0;
-            printf("%s\n", resultado);
-
-            num[0]++;
-        }
-    for ( int i = 0; i < tam; i++ ) {
-        if ( num[i] == 36 ) {
-            num[i] = 0 ;
-            num[i+1]++ ;
         }
     }
-    }
-
-    return *resultado;
+    free (num);
+    free (resultado);
+    
 }
 
+int comparar(const char *tentativa,const char *hash_V){
+    unsigned char hash_binario[SHA256_DIGEST_LENGTH];
+    SHA256((unsigned char *)tentativa, strlen(tentativa), hash_binario);
+
+    char hash_base64[64];
+    int base64_len = EVP_EncodeBlock((unsigned char *)hash_base64, hash_binario, SHA256_DIGEST_LENGTH);
+    hash_base64[base64_len] = '\0'; // Terminador de string em C
+
+    if (strcmp(hash_base64, hash_V) == 0) {
+        return 1; // Sucesso!
+    }
+    return 0;
+
+    if (strcmp(hash_base64, hash_V) == 0) {
+        printf("Senha encontrada: %s\n", tentativa);
+        exit(0); 
+    }
+    return 0;
+}
 
