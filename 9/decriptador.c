@@ -3,7 +3,7 @@
 #include <string.h>
 #include <openssl/sha.h>
 
-char *permuta(const char *str, int tam);
+void permuta(const char *str, int tam, int bytes, int *flag);
 
 int main(){
     FILE* texto = fopen("key_for_rsa_public.hash", "r");
@@ -23,28 +23,27 @@ int main(){
     char dec[8]; 
     int encontrada = 0;
     int tam = 1;
-
+    int bytes = sizeof(*hash);
 
     while (encontrada == 0)
     {
         for (int i = 0; i < tam; i++){
-            //dec = strcat("za", permuta("0123456789abcdefghijklmnopqrstuvwxyz", tam));
-            }         
-        }       
-
-        
-
-        tam++;
-
+            permuta("0123456789abcdefghijklmnopqrstuvwxyz", tam, bytes, &encontrada);
+            }   
+            tam++;
+            if(tam == 3){
+                encontrada = 1;
+            }      
+        }
+    return 0;       
 }
 
 
-char *permuta(const char *str, int tam){
-    int *num = (int *) calloc(tam+1 , sizeof(int));
+void permuta(const char *str, int tam, int bytes, int *flag){
+    int len = strlen(str);
+    int *num = (int *) calloc(36 , sizeof(int));
     //char tdper[7];
     char *resultado = (char *) malloc(tam * sizeof(char));
-    int len = strlen(str);
-    int k = tam - 1;
 
     if (resultado == NULL) {
         perror("Erro ao alocar memoria");
@@ -53,13 +52,18 @@ char *permuta(const char *str, int tam){
 
     while(num[tam] == 0){
         for (int i = 0; i < len; i++){
-            for(int j = 0; j < tam; j++){
+            
+            int k = tam - 1;
+
+            for(int j = 0; j < len; j++){
                 resultado[k] = str[num[j]]; 
                 k--;
             }
 
             resultado[tam] = 0;
-            printf("%s\n", resultado);
+            char *temp = strcat("za",resultado);
+            printf("%s\n", temp);
+            // Usar o SHA256 aqui
 
             num[0]++;
         }
@@ -71,7 +75,7 @@ char *permuta(const char *str, int tam){
     }
     }
 
-    return *resultado;
+    //return *resultado;
 }
 
 
