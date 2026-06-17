@@ -7,9 +7,15 @@
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
+<<<<<<< HEAD
       "externalConsole": true,
       "cwd": "c:/Users/User/Desktop/Cripto/9",
       "program": "c:/Users/User/Desktop/Cripto/9/build/Debug/outDebug",
+=======
+      "externalConsole": false,
+      "cwd": "/home/gabriel/Cripto/9",
+      "program": "/home/gabriel/Cripto/9/build/Debug/outDebug",
+>>>>>>> refs/remotes/origin/main
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
